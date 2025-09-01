@@ -1,0 +1,15 @@
+.idea/
+*.iml
+var
+.DS_STORE
+.terraform
+node_modules/
+vendor/
+
+coverage.out
+
+.vale/
+!.vale/styles/Vocab/General
+mkdocs.yml
+site/
+.vscode
