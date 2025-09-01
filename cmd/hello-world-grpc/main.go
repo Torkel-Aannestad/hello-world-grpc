@@ -38,7 +38,7 @@ func run(_ context.Context) error {
 	//create http server
 	srv := &http.Server{
 		Addr:    fmt.Sprintf(":%v", app.config.port),
-		Handler: http.HandlerFunc(app.getPostsHandler),
+		Handler: http.HandlerFunc(app.listPostsHandler),
 	}
 
 	app.logger.Info("starting server", "port", app.config.port)
