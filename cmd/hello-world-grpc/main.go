@@ -35,10 +35,13 @@ func run(_ context.Context) error {
 		logger: logger,
 	}
 
+	//create muxer
+	router := app.routes()
+
 	//create http server
 	srv := &http.Server{
 		Addr:    fmt.Sprintf(":%v", app.config.port),
-		Handler: http.HandlerFunc(app.listPostsHandler),
+		Handler: router,
 	}
 
 	app.logger.Info("starting server", "port", app.config.port)
