@@ -11,7 +11,11 @@ type Post struct {
 	Body  string `json:"body"`
 }
 
-func (app *application) getPostsHandler(w http.ResponseWriter, r *http.Request) {
+func (app *application) getPostsHandler(w http.ResponseWriter, _ *http.Request) {
 	fmt.Println("getPostsHandler")
-	w.Write([]byte("getPostsHandler handler works"))
+	_, err := w.Write([]byte("getPostsHandler handler works"))
+	if err != nil {
+		app.logger.Error("error", "msg", err.Error())
+		return
+	}
 }

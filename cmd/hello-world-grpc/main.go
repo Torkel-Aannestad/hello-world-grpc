@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log/slog"
 	"net/http"
 	"os"
@@ -10,7 +11,6 @@ import (
 
 type config struct {
 	port int
-	env  string
 }
 
 type application struct {
@@ -18,14 +18,16 @@ type application struct {
 	logger *slog.Logger
 }
 
-func run(ctx context.Context) error {
+func run(_ context.Context) error {
 	logOpt := &slog.HandlerOptions{
 		Level: slog.LevelInfo,
 	}
 	logger := slog.New(slog.NewJSONHandler(os.Stdout, logOpt))
 
 	//create config
-	cfg := &config{}
+	cfg := &config{
+		port: 4000,
+	}
 
 	//create application
 	app := application{
@@ -35,10 +37,11 @@ func run(ctx context.Context) error {
 
 	//create http server
 	srv := &http.Server{
-		Addr:    ":4000",
+		Addr:    fmt.Sprintf(":%v", app.config.port),
 		Handler: http.HandlerFunc(app.getPostsHandler),
 	}
 
+	app.logger.Info("starting server", "port", app.config.port)
 	//start server
 	err := srv.ListenAndServe()
 	if err != nil {
@@ -54,5 +57,4 @@ func main() {
 		slog.Error("failed to start the app", slog.String("error", err.Error()))
 		os.Exit(1)
 	}
-
 }
