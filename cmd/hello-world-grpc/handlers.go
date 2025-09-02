@@ -12,11 +12,15 @@ type Post struct {
 }
 
 func (app *application) listPostsHandler(w http.ResponseWriter, _ *http.Request) {
-	fmt.Println("listPosthandler")
-	_, err := w.Write([]byte("listPosthandler response\n"))
+	posts := []Post{
+		{ID: "1", Title: "first post", Body: "lorum ipsum"},
+		{ID: "2", Title: "second post", Body: "lorum ipsum"},
+		{ID: "3", Title: "third post", Body: "lorum ipsum"},
+	}
+
+	err := app.writeJSON(w, envelope{"posts": posts}, nil, http.StatusOK)
 	if err != nil {
 		app.logger.Error("error", "msg", err.Error())
-		return
 	}
 }
 
@@ -29,9 +33,32 @@ func (app *application) getPostHandler(w http.ResponseWriter, _ *http.Request) {
 	}
 }
 
-func (app *application) createPostHandler(w http.ResponseWriter, _ *http.Request) {
-	fmt.Println("createPostHandler")
-	_, err := w.Write([]byte("createPostHandler response\n"))
+func (app *application) createPostHandler(w http.ResponseWriter, r *http.Request) {
+	var input struct {
+		Title string `json:"title"`
+		Body  string `json:"body"`
+	}
+
+	err := app.readJSON(r, &input)
+	if err != nil {
+		//response with error
+		app.logger.Error("error", "msg", err.Error())
+		w.WriteHeader(http.StatusBadRequest)
+		_, err = w.Write([]byte{})
+		if err != nil {
+			app.logger.Error("error", "msg", err.Error())
+		}
+		return
+	}
+
+	//swap for real deal
+	newPost := Post{
+		ID:    "1",
+		Title: input.Title,
+		Body:  input.Body,
+	}
+
+	err = app.writeJSON(w, envelope{"posts": newPost}, nil, http.StatusCreated)
 	if err != nil {
 		app.logger.Error("error", "msg", err.Error())
 		return
