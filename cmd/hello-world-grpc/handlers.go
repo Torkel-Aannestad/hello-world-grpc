@@ -3,6 +3,8 @@ package main
 import (
 	"fmt"
 	"net/http"
+
+	"github.com/go-chi/chi/v5"
 )
 
 type Post struct {
@@ -11,7 +13,7 @@ type Post struct {
 	Body  string `json:"body"`
 }
 
-func (app *application) listPostsHandler(w http.ResponseWriter, _ *http.Request) {
+func (app *application) listPostsHandler(w http.ResponseWriter, r *http.Request) {
 	posts := []Post{
 		{ID: "1", Title: "first post", Body: "lorum ipsum"},
 		{ID: "2", Title: "second post", Body: "lorum ipsum"},
@@ -20,15 +22,23 @@ func (app *application) listPostsHandler(w http.ResponseWriter, _ *http.Request)
 
 	err := app.writeJSON(w, envelope{"posts": posts}, nil, http.StatusOK)
 	if err != nil {
-		app.logger.Error("error", "msg", err.Error())
+		app.serverErrorResponse(w, r, err)
+		return
 	}
 }
 
-func (app *application) getPostHandler(w http.ResponseWriter, _ *http.Request) {
-	fmt.Println("getPostHandler")
-	_, err := w.Write([]byte("getPostHandler response\n"))
+func (app *application) getPostHandler(w http.ResponseWriter, r *http.Request) {
+	idParams := chi.URLParamFromCtx(r.Context(), "id")
+
+	//get post with idParams
+	post := Post{
+		ID:    idParams,
+		Title: "Actual Title",
+		Body:  "Some body will come",
+	}
+	err := app.writeJSON(w, envelope{"post": post}, nil, http.StatusOK)
 	if err != nil {
-		app.logger.Error("error", "msg", err.Error())
+		app.serverErrorResponse(w, r, err)
 		return
 	}
 }
@@ -41,13 +51,7 @@ func (app *application) createPostHandler(w http.ResponseWriter, r *http.Request
 
 	err := app.readJSON(r, &input)
 	if err != nil {
-		//response with error
-		app.logger.Error("error", "msg", err.Error())
-		w.WriteHeader(http.StatusBadRequest)
-		_, err = w.Write([]byte{})
-		if err != nil {
-			app.logger.Error("error", "msg", err.Error())
-		}
+		app.badRequestResponse(w, r, err)
 		return
 	}
 
